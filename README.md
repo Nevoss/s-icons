@@ -16,13 +16,13 @@ svg-to-json
 <!-- usage -->
 ```sh-session
 $ npm install -g s-icons
-$ svg-to-json COMMAND
+$ s-icons COMMAND
 running command...
-$ svg-to-json (-v|--version|version)
-s-icons/0.1.0 linux-x64 node-v12.18.0
-$ svg-to-json --help [COMMAND]
+$ s-icons (-v|--version|version)
+s-icons/0.2.0 linux-x64 node-v12.18.0
+$ s-icons --help [COMMAND]
 USAGE
-  $ svg-to-json COMMAND
+  $ s-icons COMMAND
 ...
 ```
 <!-- usagestop -->
