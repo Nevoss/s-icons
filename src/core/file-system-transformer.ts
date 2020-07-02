@@ -1,4 +1,4 @@
-import { pathExistsSync, readdirSync, readFileSync, statSync } from 'fs-extra'
+import { existsSync, readdirSync, readFileSync, statSync } from 'fs'
 import { basename, extname } from 'path'
 import { Transformer } from '../types/transformer'
 import { TransformedInput } from '../types/transformed-input'
@@ -22,7 +22,7 @@ export class FileSystemTransformer implements Transformer {
   }
 
   public run(): TransformedInput {
-    if (!pathExistsSync(this.sourcePath)) {
+    if (!existsSync(this.sourcePath)) {
       throw new Error(`The path '${this.sourcePath}' is not exists.`)
     }
 

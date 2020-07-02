@@ -3,7 +3,7 @@ import { FileSystemTransformer } from './core/file-system-transformer'
 import { Manager } from './core/manager'
 import { SvgParser } from './core/svg-parser'
 import { JsonOutputHandler } from './core/json-output-handler'
-import { pathExistsSync } from 'fs-extra'
+import { existsSync } from 'fs'
 import { Config } from './types/config'
 import { pick, mapValues, split } from 'lodash'
 import { resolve } from 'path'
@@ -70,13 +70,13 @@ class SvgToJson extends Command {
   }
 
   public async readConfig(configPath: string) {
-    if (configPath && !pathExistsSync(configPath)) {
+    if (configPath && !existsSync(configPath)) {
       this.error(`'${configPath}' is not exists.`)
     }
 
     configPath = configPath ? configPath : `${process.cwd()}/icons.config.js`
 
-    if (!pathExistsSync(configPath)) {
+    if (!existsSync(configPath)) {
       return {}
     }
 
