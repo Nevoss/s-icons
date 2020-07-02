@@ -1,0 +1,13 @@
+{
+  "extends": [
+    "oclif",
+    "oclif-typescript",
+    "prettier"
+  ],
+  "rules": {
+    "@typescript-eslint/member-delimiter-style": {
+      "delimiter": "none",
+      "requireLast": true
+    }
+  }
+}
