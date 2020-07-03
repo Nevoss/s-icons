@@ -1,12 +1,13 @@
 import { Command, flags } from '@oclif/command'
+import { IConfig } from '@oclif/config'
 import { FileSystemTransformer } from './core/file-system-transformer'
 import { Manager } from './core/manager'
 import { SvgParser } from './core/svg-parser'
 import { JsonOutputHandler } from './core/json-output-handler'
-import { existsSync } from 'fs'
 import { Config } from './types/config'
-import { pick, mapValues, split } from 'lodash'
-import { resolve } from 'path'
+import { Messenger } from './utils/messenger'
+import { ConfigFactory } from './utils/config-factory'
+import { SIconError } from './s-icon-error'
 
 class SvgToJson extends Command {
   protected defaults = {
@@ -36,74 +37,75 @@ class SvgToJson extends Command {
     config: flags.string({
       char: 'c',
       description: 'config file.',
-      default: '',
     }),
   }
 
   public static args = []
 
+  protected messenger: Messenger
+
+  protected configFactory: ConfigFactory
+
+  constructor(argv: string[], config: IConfig) {
+    super(argv, config)
+
+    this.messenger = new Messenger()
+    this.configFactory = new ConfigFactory({
+      messenger: this.messenger,
+      defaultConfigPath: `${process.cwd()}/icons.config.js`,
+    })
+  }
+
   public async run() {
     const { flags } = this.parse(SvgToJson)
 
-    const resolvedConfig: Config = {
+    this.listenMessenger()
+
+    const config: Config = {
       ...this.defaults,
-      ...this.resolveConfig(await this.readConfig(flags.config)),
-      ...this.resolveConfig(flags),
+      ...this.configFactory.resolveConfig(
+        await this.configFactory.readConfigFile(flags.config)
+      ),
+      ...this.configFactory.resolveConfig(flags),
     }
 
-    if (!resolvedConfig.source) {
-      this.error('Must have source.')
+    if (!config.source) {
+      this.messenger.error(
+        '`source` must be declared (as CLI flag or in icons.config.js file).'
+      )
     }
 
     const manager = new Manager({
       transformer: new FileSystemTransformer({
-        allowedExtensions: resolvedConfig.allowedExtensions,
-        sourcePath: resolvedConfig.source,
+        allowedExtensions: config.allowedExtensions,
+        sourcePath: config.source,
+        messenger: this.messenger,
       }),
-      parser: new SvgParser(),
+      parser: new SvgParser({ messenger: this.messenger }),
       outputHandler: new JsonOutputHandler({
-        destinationPath: resolvedConfig.destination,
+        destinationPath: config.destination,
+        messenger: this.messenger,
       }),
     })
 
-    return manager.transform().parse().output()
-  }
-
-  public async readConfig(configPath: string) {
-    if (configPath && !existsSync(configPath)) {
-      this.error(`'${configPath}' is not exists.`)
-    }
-
-    configPath = configPath ? configPath : `${process.cwd()}/icons.config.js`
-
-    if (!existsSync(configPath)) {
-      return {}
-    }
-
-    const result = await import(configPath)
-
-    if (!(result instanceof Object)) {
-      return {}
-    }
-
-    return result
-  }
-
-  public resolveConfig(data: object) {
-    return mapValues(
-      pick(data, ['source', 'destination', 'allowedExtensions']),
-      (value, key) => {
-        if (key === 'allowedExtensions' && typeof value === 'string') {
-          return split(value, ',')
-        }
-
-        if (['source', 'destination'].includes(key)) {
-          return resolve(value)
-        }
-
-        return value
+    try {
+      return manager.transform().parse().output()
+    } catch (error) {
+      if (!(error instanceof SIconError)) {
+        throw error
       }
-    )
+
+      this.error(error.message)
+    }
+  }
+
+  protected listenMessenger() {
+    this.messenger.listen({
+      [Messenger.LOG]: (message?: string) => this.log(message),
+      [Messenger.ERROR]: (message?: string) =>
+        this.error(message ? message : ''),
+      [Messenger.WARN]: (message?: string) => this.warn(message ? message : ''),
+    })
   }
 }
 

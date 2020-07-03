@@ -3,8 +3,19 @@ import { Parser } from '../types/parser'
 import { TransformedInput } from '../types/transformed-input'
 import { ParsedIcons } from '../types/parsed-icon'
 import { mapValues, omit } from 'lodash'
+import { MessengerInterface } from '../types/messenger-interface'
+
+interface SvgParserConstructorArgs {
+  messenger?: MessengerInterface
+}
 
 export class SvgParser implements Parser {
+  protected messenger?: MessengerInterface
+
+  constructor({ messenger }: SvgParserConstructorArgs = {}) {
+    this.messenger = messenger
+  }
+
   run(transformedInput: TransformedInput): ParsedIcons {
     return mapValues(transformedInput, (content) => {
       return this.parseElement(parse(content).childNodes[0])

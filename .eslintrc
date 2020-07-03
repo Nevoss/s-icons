@@ -8,6 +8,7 @@
     "@typescript-eslint/member-delimiter-style": {
       "delimiter": "none",
       "requireLast": true
-    }
+    },
+    "valid-jsdoc": "off"
   }
 }
