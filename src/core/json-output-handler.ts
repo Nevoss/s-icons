@@ -33,5 +33,7 @@ export class JsonOutputHandler implements OutputHandler {
     }
 
     writeFileSync(destinationPath, JSON.stringify(parsedIcons))
+
+    this.messenger?.log('Created icons json file in: ' + destinationPath)
   }
 }

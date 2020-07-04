@@ -3,7 +3,7 @@ import { basename, extname } from 'path'
 import { Transformer } from '../types/transformer'
 import { TransformedInput } from '../types/transformed-input'
 import { MessengerInterface } from '../types/messenger-interface'
-import { SIconError } from '../s-icon-error'
+import { SIconError } from '../errors/s-icon-error'
 
 /**
  * Constructor arguments for FileSystemTransformer.
@@ -56,7 +56,7 @@ export class FileSystemTransformer implements Transformer {
   public run(): TransformedInput {
     if (!existsSync(this.sourcePath)) {
       throw SIconError.create(
-        `The config path '${this.sourcePath}' is not exists.`
+        `The icons source directory path '${this.sourcePath}' is not exists.`
       )
     }
 
@@ -64,7 +64,7 @@ export class FileSystemTransformer implements Transformer {
 
     if (!stats.isDirectory()) {
       throw SIconError.create(
-        `The source path '${this.sourcePath}' must be directory`
+        `The icons source path '${this.sourcePath}' must be directory`
       )
     }
 

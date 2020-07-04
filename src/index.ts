@@ -7,7 +7,9 @@ import { JsonOutputHandler } from './core/json-output-handler'
 import { Config } from './types/config'
 import { Messenger } from './utils/messenger'
 import { ConfigFactory } from './utils/config-factory'
-import { SIconError } from './s-icon-error'
+import { SIconError } from './errors/s-icon-error'
+import { CliLogger } from './utils/cli-logger'
+import * as colors from './utils/colors'
 
 class SvgToJson extends Command {
   protected defaults = {
@@ -40,11 +42,11 @@ class SvgToJson extends Command {
     }),
   }
 
-  public static args = []
-
   protected messenger: Messenger
 
   protected configFactory: ConfigFactory
+
+  protected cliLogger: CliLogger
 
   constructor(argv: string[], config: IConfig) {
     super(argv, config)
@@ -54,9 +56,12 @@ class SvgToJson extends Command {
       messenger: this.messenger,
       defaultConfigPath: `${process.cwd()}/icons.config.js`,
     })
+    this.cliLogger = new CliLogger()
   }
 
   public async run() {
+    this.cliLogger.header()
+
     const { flags } = this.parse(SvgToJson)
 
     this.listenMessenger()
@@ -70,8 +75,9 @@ class SvgToJson extends Command {
     }
 
     if (!config.source) {
-      this.messenger.error(
-        '`source` must be declared (as CLI flag or in icons.config.js file).'
+      config.source = await this.cliLogger.prompt(
+        colors.info('`source`') +
+          ' was not declared, please fill your icons source directory'
       )
     }
 
@@ -89,22 +95,26 @@ class SvgToJson extends Command {
     })
 
     try {
-      return manager.transform().parse().output()
+      manager.transform().parse().output()
     } catch (error) {
       if (!(error instanceof SIconError)) {
         throw error
       }
 
-      this.error(error.message)
+      this.messenger.error(error.message)
     }
+
+    this.cliLogger.footer()
   }
 
   protected listenMessenger() {
     this.messenger.listen({
-      [Messenger.LOG]: (message?: string) => this.log(message),
+      [Messenger.LOG]: (message?: string) =>
+        this.cliLogger.log(message ? message : ''),
       [Messenger.ERROR]: (message?: string) =>
-        this.error(message ? message : ''),
-      [Messenger.WARN]: (message?: string) => this.warn(message ? message : ''),
+        this.cliLogger.die(message ? message : ''),
+      [Messenger.WARN]: (message?: string) =>
+        this.cliLogger.error(message ? message : ''),
     })
   }
 }
