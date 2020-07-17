@@ -31,8 +31,10 @@ export class SvgParser implements Parser {
       tagName: element.tagName,
       attributes: {
         ...omit(element.attributes, ['width', 'height']),
-        ...(element.attributes.stroke && { stroke: 'currentColor' }),
-        ...(element.attributes.fill && { fill: 'currentColor' }),
+        ...(element.attributes.stroke &&
+          element.attributes.stroke !== 'none' && { stroke: 'currentColor' }),
+        ...(element.attributes.fill &&
+          element.attributes.fill !== 'none' && { fill: 'currentColor' }),
       },
       children:
         element.childNodes.length > 0
