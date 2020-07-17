@@ -19,7 +19,7 @@ $ npm install -g s-icons
 $ s-icons COMMAND
 running command...
 $ s-icons (-v|--version|version)
-s-icons/0.2.0 linux-x64 node-v12.18.0
+s-icons/0.3.0 linux-x64 node-v12.18.0
 $ s-icons --help [COMMAND]
 USAGE
   $ s-icons COMMAND
