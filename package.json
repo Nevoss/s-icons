@@ -1,6 +1,6 @@
 {
   "name": "s-icons",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": "Nevo Golan <nevos12@gmail.com>",
   "bin": {
     "s-icons": "./bin/run"
